@@ -24,11 +24,11 @@ namespace FundoNote.Controllers
                 var result = userBL.Register(userRegestrationModel);
                 if(result != null)
                 {
-                    return Ok(new {success=true,message="Regestration Sucesfull",data=result});
+                    return Ok(new {success=true,message="Regestration Successfull",data=result});
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Regestration not Sucessfull"});
+                    return BadRequest(new { success = false, message = "Regestration not Successfull"});
                 }
             }
             catch (System.Exception)
