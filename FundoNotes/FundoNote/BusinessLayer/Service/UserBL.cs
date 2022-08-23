@@ -43,5 +43,21 @@ namespace BusinessLayer.Service
                 throw;
             }
         }
+
+        public string FogotPassword(string Email)
+        {
+            try
+            {
+                return userRL.FogotPassword(Email);
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
     }
 }

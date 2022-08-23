@@ -11,5 +11,8 @@ namespace BusinessLayer.Interface
         public UserEntity Register(UserRegestrationModel userRegestrationModel);
         public string Login(UserLoginModel userLoginModel);
 
+        public string FogotPassword(string Email);
+
+
     }
 }

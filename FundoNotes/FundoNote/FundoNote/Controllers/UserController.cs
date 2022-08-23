@@ -2,6 +2,7 @@
 using CommonLayer.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace FundoNote.Controllers
 {
@@ -15,8 +16,8 @@ namespace FundoNote.Controllers
         {
             this.userBL = userBL;
         }
-        [HttpPost("Register")] // For Custom Route
-
+        [HttpPost] // For Custom Route
+        [Route("Register")]
         public ActionResult Registration(UserRegestrationModel userRegestrationModel)
         {
             try
@@ -38,7 +39,8 @@ namespace FundoNote.Controllers
             }
         }
 
-        [HttpPost("Login")] // For Custom Route
+        [HttpPost] // For Custom Route
+        [Route("Login")]
 
         public ActionResult Login(UserLoginModel userLoginModel)
         {
@@ -55,6 +57,29 @@ namespace FundoNote.Controllers
                 }
             }
             catch (System.Exception)
+            {
+
+                throw;
+            }
+        }
+        [HttpPost] // For Custom Route
+        [Route("ForgotPassword")]
+        public ActionResult FogotPassword(string Email)
+        {
+            try
+            {
+                var result = userBL.FogotPassword(Email);
+                if (result != null)
+                {
+                    return Ok(new { success = true, message = "Reset link sent Succecsfull", data = result });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Reset link sending failed" });
+                }
+
+            }
+            catch (Exception)
             {
 
                 throw;
