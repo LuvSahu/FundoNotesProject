@@ -34,6 +34,22 @@ namespace CommonLayer.Model
             string token = msg.Body.ToString();
             string Subject = "FundoNotes Token Link";
             string Body = token;
+
+            MailMessage mail = new MailMessage();
+            mail.From = new MailAddress("lsahu5438@gmail.com");
+            mail.To.Add("lsahu5438@gmail.com");
+            mail.Subject = "subject";
+            mail.IsBodyHtml = true;
+
+            string htmlbody;
+
+            htmlbody = "<body><p>Dear User,<br>" +
+                        "Copy below token to reset your password.<br></body>" +
+                        token;
+
+            mail.Body = htmlbody;
+
+
             var SMTP = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
@@ -41,7 +57,10 @@ namespace CommonLayer.Model
                 EnableSsl = true,
 
             };
-            SMTP.Send("lsahu5438@gmail.com", "lsahu5438@gmail.com",Subject,Body);
+
+
+            // SMTP.Send("lsahu5438@gmail.com", "lsahu5438@gmail.com",Subject,Body);
+            SMTP.Send(mail);
             messageQ.BeginReceive();
 
         }

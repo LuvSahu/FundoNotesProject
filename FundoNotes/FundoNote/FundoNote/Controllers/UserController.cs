@@ -1,8 +1,11 @@
 ﻿using BusinessLayer.Interface;
 using CommonLayer.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace FundoNote.Controllers
 {
@@ -23,13 +26,13 @@ namespace FundoNote.Controllers
             try
             {
                 var result = userBL.Register(userRegestrationModel);
-                if(result != null)
+                if (result != null)
                 {
-                    return Ok(new {success=true,message="Regestration Successfull",data=result});
+                    return Ok(new { success = true, message = "Regestration Successfull", data = result });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, message = "Regestration not Successfull"});
+                    return BadRequest(new { success = false, message = "Regestration not Successfull" });
                 }
             }
             catch (System.Exception)
@@ -79,11 +82,46 @@ namespace FundoNote.Controllers
                 }
 
             }
-            catch (Exception)
+            catch (System.Exception)
             {
 
                 throw;
             }
         }
+
+        [Authorize]
+        [HttpPut]
+        [Route("ResetLink")]
+        public ActionResult ResetLink(string password, string confirmPassword)
+        {
+
+            try
+            {
+
+                var Email = User.FindFirst(ClaimTypes.Email).Value.ToString();
+
+                var result = userBL.ResetLink(Email, password, confirmPassword);
+
+                if (result != null)
+                {
+                    return Ok(new { success = true, message = "REST LINK SEND SUCCESSFULL" });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "REST LINK SEND FAILED" });
+                }
+
+            }
+            catch (System.Exception)
+            {
+
+                throw;
+            }
+
+        }
+
+
+
     }
+
 }

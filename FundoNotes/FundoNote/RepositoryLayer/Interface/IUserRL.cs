@@ -12,6 +12,9 @@ namespace RepositoryLayer.Interface
         public string Login(UserLoginModel userLoginModel);
         public string FogotPassword(string Email);
 
+        public bool ResetLink(string Email, string password, string confirmPassword);
+
+
 
 
     }

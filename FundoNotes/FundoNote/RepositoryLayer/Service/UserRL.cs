@@ -15,8 +15,12 @@ namespace RepositoryLayer.Service
 {
     public class UserRL : IUserRL
     {
-        private readonly FundoContext fundoContext;
         private readonly IConfiguration _Appsettings;
+
+        private readonly FundoContext fundoContext;
+
+        public object UserId { get; private set; }
+
         public UserRL(FundoContext fundoContext, IConfiguration _Appsettings)
         {
             this.fundoContext = fundoContext;
@@ -71,20 +75,20 @@ namespace RepositoryLayer.Service
             }
         }
 
-        private string GenerateSecurityToken(string Email, long UserId)
+        public string GenerateSecurityToken(string email, long UserId)
         {
-
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(this._Appsettings[("JWT:key")]);
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(this._Appsettings[("JWT:key")]));
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Email, Email),
-                    new Claim("UserID", UserId.ToString())
+                    new Claim(ClaimTypes.Email, email),
+                    new Claim("UserId", UserId.ToString())
                 }),
-
-
+                Expires = DateTime.UtcNow.AddMinutes(10),
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -110,6 +114,32 @@ namespace RepositoryLayer.Service
                 {
                     return null;
                 }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public bool ResetLink(string Email, string password, string confirmPassword)
+        {
+            try
+            {
+                if (password.Equals(confirmPassword))
+                {
+                    var EmailCheck = fundoContext.UserTable.FirstOrDefault(x => x.Email == Email);
+                    EmailCheck.Password = password;
+
+                    fundoContext.SaveChanges();
+                    return true;
+
+                }
+                else
+                {
+                    return false;
+                }
+
             }
             catch (Exception)
             {

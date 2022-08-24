@@ -13,6 +13,9 @@ namespace BusinessLayer.Interface
 
         public string FogotPassword(string Email);
 
+        public bool ResetLink(string Email, string password, string confirmPassword);
+
+
 
     }
 }
