@@ -59,7 +59,7 @@ namespace CommonLayer.Model
             };
 
 
-            // SMTP.Send("lsahu5438@gmail.com", "lsahu5438@gmail.com",Subject,Body);
+            //SMTP.Send("lsahu5438@gmail.com", "lsahu5438@gmail.com",Subject,Body);
             SMTP.Send(mail);
             messageQ.BeginReceive();
 
