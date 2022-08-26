@@ -145,29 +145,27 @@ namespace RepositoryLayer.Service
             }
         }
 
-        public bool Archive(long noteId, long userId)
+        public NotesEntity Archive(long noteid, long userid)
         {
             try
             {
-                var result = fundoContext.NotesTable.Where(x => x.UserId == userId && x.NotesId == noteId).FirstOrDefault();
-
-                if (result.Archive == false)
-                {
-                    result.Archive = true;
-                    fundoContext.SaveChanges();
-                    return true;
-                }
-                else
+                NotesEntity result = this.fundoContext.NotesTable.FirstOrDefault(x => x.NotesId == noteid && x.UserId == userid);
+                if (result.Archive == true)
                 {
                     result.Archive = false;
-                    fundoContext.SaveChanges();
-                    return false;
+                    this.fundoContext.SaveChanges();
+                    return result;
                 }
+                result.Archive = true;
+                this.fundoContext.SaveChanges();
+                return null;
             }
             catch (Exception)
             {
                 throw;
             }
+
+
         }
 
 

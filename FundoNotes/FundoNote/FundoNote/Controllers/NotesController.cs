@@ -29,7 +29,7 @@ namespace FundoNote.Controllers
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
-                var result = notesBL.CreateNotes(notesModel,userId);
+                var result = notesBL.CreateNotes(notesModel, userId);
                 if (result != null)
                 {
                     return Ok(new { success = true, message = "Notes Created Successfull", data = result });
@@ -132,7 +132,7 @@ namespace FundoNote.Controllers
             }
         }
 
-        
+
 
         [Authorize]
         [HttpPut("Pin")]
@@ -141,7 +141,7 @@ namespace FundoNote.Controllers
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
-                var result = notesBL.PinnedORNot(noteid,userId);
+                var result = notesBL.PinnedORNot(noteid, userId);
                 if (result != null)
                 {
                     return this.Ok(new
@@ -166,29 +166,33 @@ namespace FundoNote.Controllers
 
         [Authorize]
         [HttpPut("Archive")]
-        public IActionResult Archive(long noteId)
+        public IActionResult Archive(long noteid)
         {
-
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
-                var result = notesBL.Archive(noteId, userId);
-
-                if (result == true)
+                var result = notesBL.Archive(noteid,userId);
+                if (result != null)
                 {
-                    return Ok(new { success = true, message = "NOTE ARCHIVE SUCCESSFULL!" });
+                    return this.Ok(new
+                    {
+                        message = "Note Archived Successfully ",
+                        Response = result
+                    });
                 }
-                else if (result == false)
+                else
                 {
-                    return Ok(new { success = true, message = "NOTE ARCHIVE FAIL!" });
+                    return this.BadRequest(new
+                    {
+                        message = "Note Unarchived"
+                    });
                 }
-                return BadRequest(new { success = false, message = "Operation Fail." });
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 throw;
             }
-
         }
     }
+
 }

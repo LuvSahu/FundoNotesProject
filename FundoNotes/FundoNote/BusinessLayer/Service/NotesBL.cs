@@ -81,17 +81,16 @@ namespace BusinessLayer.Service
             }
         }
 
-        public bool Archive(long noteId, long userId)
+        public NotesEntity Archive(long noteid, long userid)
         {
             try
             {
-                return notesRL.Archive(noteId, userId);
+                return this.notesRL.Archive(noteid,userid);
             }
             catch (Exception)
             {
                 throw;
             }
         }
-
     }
 }

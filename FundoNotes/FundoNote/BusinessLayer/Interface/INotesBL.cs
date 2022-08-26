@@ -19,7 +19,7 @@ namespace BusinessLayer.Interface
 
         public NotesEntity PinnedORNot(long noteid, long userId);
 
-        public bool Archive(long noteId, long userId);
+        public NotesEntity Archive(long noteid, long userid);
 
 
 
