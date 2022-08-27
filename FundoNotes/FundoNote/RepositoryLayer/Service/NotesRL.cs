@@ -1,4 +1,7 @@
-﻿using CommonLayer.Model;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using CommonLayer.Model;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using RepositoryLayer.Context;
 using RepositoryLayer.Entity;
@@ -16,12 +19,16 @@ namespace RepositoryLayer.Service
 
         private readonly FundoContext fundoContext;
 
+        private readonly IConfiguration cloudinaryEntity;
+
         public object UserId { get; private set; }
 
-        public NotesRL(FundoContext fundoContext, IConfiguration _Appsettings)
+        public NotesRL(FundoContext fundoContext, IConfiguration _Appsettings, IConfiguration cloudinaryEntity
+)
         {
             this.fundoContext = fundoContext;
             this._Appsettings = _Appsettings;
+            this.cloudinaryEntity = cloudinaryEntity;
         }
         public NotesEntity CreateNotes(NotesModel notesModel, long userId)
         {
@@ -166,6 +173,59 @@ namespace RepositoryLayer.Service
             }
 
 
+        }
+
+        public NotesEntity Trash(long noteid, long userid)
+        {
+            try
+            {
+                NotesEntity result = this.fundoContext.NotesTable.FirstOrDefault(x => x.NotesId == noteid && x.UserId == userid);
+                if (result.Trash == true)
+                {
+                    result.Trash = false;
+                    this.fundoContext.SaveChanges();
+                    return result;
+                }
+                result.Trash = true;
+                this.fundoContext.SaveChanges();
+                return null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+            public string UploadImage(long noteid, IFormFile img,long userid)
+        {
+            try
+            {
+                var result = this.fundoContext.NotesTable.FirstOrDefault(e => e.NotesId == noteid && e.UserId == userid);
+                if (result != null)
+                {
+                    Account cloudaccount = new Account(
+                         cloudinaryEntity["CloudinarySettings:cloudName"],
+                         cloudinaryEntity["CloudinarySettings:apiKey"],
+                         cloudinaryEntity["CloudinarySettings:apiSecret"]
+                         );
+
+                    Cloudinary cloudinary = new Cloudinary(cloudaccount);
+                    var uploadParams = new ImageUploadParams()
+                    {
+                        File = new FileDescription(img.FileName, img.OpenReadStream()),
+                    };
+                    var uploadResult = cloudinary.Upload(uploadParams);
+                    string imagePath = uploadResult.Url.ToString();
+                    result.Image = imagePath;
+                    fundoContext.SaveChanges();
+                    return "Image upload SuccessFully";
+                }
+                return null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
 

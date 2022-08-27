@@ -1,4 +1,5 @@
 ﻿using CommonLayer.Model;
+using Microsoft.AspNetCore.Http;
 using RepositoryLayer.Entity;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,10 @@ namespace RepositoryLayer.Interface
 
         public NotesEntity Archive(long noteid, long userid);
 
+        public NotesEntity Trash(long noteid, long userid);
 
+
+        public string UploadImage(long noteid, IFormFile img, long userid);
 
     }
 }

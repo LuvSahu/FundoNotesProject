@@ -193,6 +193,62 @@ namespace FundoNote.Controllers
                 throw;
             }
         }
+
+
+        [Authorize]
+        [HttpPut("Trash")]
+        public IActionResult Trash(long noteid)
+        {
+            try
+            {
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
+                var result = notesBL.Trash(noteid, userId);
+                if (result != null)
+                {
+                    return this.Ok(new
+                    {
+                        message = "Note Trash Successfully ",
+                        Response = result
+                    });
+                }
+                else
+                {
+                    return this.BadRequest(new
+                    {
+                        message = "Note UnTrashed"
+                    });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [Authorize]
+        [HttpPut("UploadImage")]
+        public IActionResult UploadImage(long noteid, IFormFile img)
+        {
+            try
+            {
+                long userID = Convert.ToInt32(User.Claims.FirstOrDefault(user => user.Type == "UserId").Value);
+                var result = notesBL.UploadImage(noteid, img, userID);
+                if (result != null)
+                {
+                    return this.Ok(new { message = "uploaded ", Response = result });
+                }
+                else
+                {
+                    return this.BadRequest(new { message = "Not uploaded" });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
     }
 
 }

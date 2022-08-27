@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interface;
 using CommonLayer.Model;
+using Microsoft.AspNetCore.Http;
 using RepositoryLayer.Entity;
 using RepositoryLayer.Interface;
 using RepositoryLayer.Service;
@@ -86,6 +87,30 @@ namespace BusinessLayer.Service
             try
             {
                 return this.notesRL.Archive(noteid,userid);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public NotesEntity Trash(long noteid, long userid)
+        {
+            try
+            {
+                return this.notesRL.Trash(noteid, userid);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public string UploadImage(long noteid, IFormFile img, long userid)
+        {
+            try
+            {
+                return this.notesRL.UploadImage(noteid, img,userid);
             }
             catch (Exception)
             {
