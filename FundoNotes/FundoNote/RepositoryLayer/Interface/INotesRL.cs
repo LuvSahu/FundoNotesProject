@@ -23,8 +23,10 @@ namespace RepositoryLayer.Interface
 
         public NotesEntity Trash(long noteid, long userid);
 
-
         public string UploadImage(long noteid, IFormFile img, long userid);
+
+        public NotesEntity ChoiceColor(long NotesID, string Color);
+
 
     }
 }

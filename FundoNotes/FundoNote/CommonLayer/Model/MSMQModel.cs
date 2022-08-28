@@ -45,7 +45,7 @@ namespace CommonLayer.Model
 
             htmlbody = "<body><p>Dear User,<br>" +
                         "Copy below token to reset your password.<br></body>" +
-                        token;
+                        token ;
 
             mail.Body = htmlbody;
 

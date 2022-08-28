@@ -119,6 +119,7 @@ namespace RepositoryLayer.Service
                 int deletednote = this.fundoContext.SaveChanges();
                 if (deletednote > 0)
                 {
+                    fundoContext.NotesTable.Remove(result);
                     return true;
                 }
                 return false;
@@ -139,10 +140,12 @@ namespace RepositoryLayer.Service
                 if (result.Pin == true)
                 {
                     result.Pin = false;
+                    fundoContext.NotesTable.Update(result);
                     this.fundoContext.SaveChanges();
                     return result;
                 }
                 result.Pin = true;
+                fundoContext.NotesTable.Update(result);
                 this.fundoContext.SaveChanges();
                 return null;
             }
@@ -160,10 +163,12 @@ namespace RepositoryLayer.Service
                 if (result.Archive == true)
                 {
                     result.Archive = false;
+                    fundoContext.NotesTable.Update(result);
                     this.fundoContext.SaveChanges();
                     return result;
                 }
                 result.Archive = true;
+                fundoContext.NotesTable.Update(result);
                 this.fundoContext.SaveChanges();
                 return null;
             }
@@ -183,10 +188,12 @@ namespace RepositoryLayer.Service
                 if (result.Trash == true)
                 {
                     result.Trash = false;
+                    fundoContext.NotesTable.Update(result);
                     this.fundoContext.SaveChanges();
                     return result;
                 }
                 result.Trash = true;
+                fundoContext.NotesTable.Update(result);
                 this.fundoContext.SaveChanges();
                 return null;
             }
@@ -228,6 +235,28 @@ namespace RepositoryLayer.Service
             }
         }
 
+        public NotesEntity ChoiceColor(long NotesID, string Color)
+        {
+            try
+            {
+                var result = fundoContext.NotesTable.SingleOrDefault(x => x.NotesId == NotesID);
+                if (result != null)
+                {
+                    result.Color = Color;
+                    fundoContext.NotesTable.Update(result);
+                    fundoContext.SaveChanges();
+                    return result;
+                }
+                else
+                {
+                    return null; ;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
     }
 }
