@@ -250,12 +250,12 @@ namespace FundoNote.Controllers
 
         [Authorize]
         [HttpPut("Color")]
-        public ActionResult ChoiceColor(long NotesID, string Color)
+        public ActionResult Color(long NotesID, string Color)
         {
             try
             {
                 long ID = Convert.ToInt32(User.Claims.All(x => x.Type == "UserId"));
-                var result = notesBL.ChoiceColor(NotesID, Color);
+                var result = notesBL.Color(NotesID, Color);
                 if (result != null)
                 {
                     return Ok(new { success = true, message = "Color Changed Successfully", data = result });

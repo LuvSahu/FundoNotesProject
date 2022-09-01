@@ -43,6 +43,12 @@ namespace FundoNote
             services.AddTransient<INotesRL, NotesRL>();
             services.AddTransient<INotesBL, NotesBL>();
 
+            services.AddTransient<ICollabRL, CollabRL>();
+            services.AddTransient<ICollabBL, CollabBL>();
+
+            services.AddTransient<ILabelRL, LabelRL>();
+            services.AddTransient<ILabelBL, LabelBL>();
+
             services.AddSwaggerGen(opt =>
             {
                 opt.SwaggerDoc("v1", new OpenApiInfo

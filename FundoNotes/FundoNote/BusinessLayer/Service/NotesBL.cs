@@ -118,11 +118,11 @@ namespace BusinessLayer.Service
             }
         }
 
-        public NotesEntity ChoiceColor(long NotesID, string Color)
+        public NotesEntity Color(long NotesID, string Color)
         {
             try
             {
-                return notesRL.ChoiceColor(NotesID, Color);
+                return notesRL.Color(NotesID, Color);
             }
             catch (Exception)
             {

@@ -21,7 +21,7 @@ namespace RepositoryLayer.Service
 
         private readonly IConfiguration cloudinaryEntity;
 
-        public object UserId { get; private set; }
+        //public object UserId { get; private set; }
 
         public NotesRL(FundoContext fundoContext, IConfiguration _Appsettings, IConfiguration cloudinaryEntity
 )
@@ -34,11 +34,8 @@ namespace RepositoryLayer.Service
         {
             try
             {
-                NotesEntity user = new NotesEntity();
-               
-                var result = fundoContext.NotesTable.FirstOrDefault(e => e.UserId == userId);
-                if(result != null)
-                {
+                
+                    NotesEntity user = new NotesEntity();
                     user.Title = notesModel.Title;
                     user.Description = notesModel.Description;
 
@@ -55,15 +52,6 @@ namespace RepositoryLayer.Service
                     fundoContext.SaveChanges();
                     return user;
 
-                }
-                else
-                {
-                    return null;
-                }
-
-
-                
-                
             }
             catch (Exception)
             {
@@ -115,7 +103,7 @@ namespace RepositoryLayer.Service
             try
             {
                 var result = this.fundoContext.NotesTable.FirstOrDefault(x => x.NotesId == noteid);
-                fundoContext.Remove(result);
+               // fundoContext.Remove(result);
                 int deletednote = this.fundoContext.SaveChanges();
                 if (deletednote > 0)
                 {
@@ -204,7 +192,7 @@ namespace RepositoryLayer.Service
         }
 
             public string UploadImage(long noteid, IFormFile img,long userid)
-        {
+            {
             try
             {
                 var result = this.fundoContext.NotesTable.FirstOrDefault(e => e.NotesId == noteid && e.UserId == userid);
@@ -235,7 +223,7 @@ namespace RepositoryLayer.Service
             }
         }
 
-        public NotesEntity ChoiceColor(long NotesID, string Color)
+        public NotesEntity Color(long NotesID, string Color)
         {
             try
             {

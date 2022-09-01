@@ -25,7 +25,7 @@ namespace RepositoryLayer.Interface
 
         public string UploadImage(long noteid, IFormFile img, long userid);
 
-        public NotesEntity ChoiceColor(long NotesID, string Color);
+        public NotesEntity Color(long NotesID, string Color);
 
 
     }
