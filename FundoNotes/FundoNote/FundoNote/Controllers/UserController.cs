@@ -1,8 +1,10 @@
-﻿using BusinessLayer.Interface;
+﻿using Aspose.Pdf.Operators;
+using BusinessLayer.Interface;
 using CommonLayer.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,12 +17,15 @@ namespace FundoNote.Controllers
     {
         private readonly IUserBL userBL; // Object
 
-        public UserController(IUserBL userBL) // Constructor
+        private readonly ILogger<UserController> _logger;
+
+        public UserController(IUserBL userBL, ILogger<UserController> _logger) // Constructor
         {
             this.userBL = userBL;
+            this._logger = _logger;
         }
-        [HttpPost] // For Custom Route
-        [Route("Register")]
+         // For Custom Route
+        [HttpPost("Register")]
         public ActionResult Registration(UserRegestrationModel userRegestrationModel)
         {
             try
@@ -28,22 +33,24 @@ namespace FundoNote.Controllers
                 var result = userBL.Register(userRegestrationModel);
                 if (result != null)
                 {
+                    //throw new Exception("Error Occured");
                     return Ok(new { success = true, message = "Regestration Successfull", data = result });
                 }
                 else
                 {
+
                     return BadRequest(new { success = false, message = "Regestration not Successfull" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+              _logger.LogError(ex.ToString());
                 throw;
             }
         }
-
-        [HttpPost] // For Custom Route
-        [Route("Login")]
+        
+         // For Custom Route
+        [HttpPost("Login")]
 
         public ActionResult Login(UserLoginModel userLoginModel)
         {
@@ -52,6 +59,7 @@ namespace FundoNote.Controllers
                 var result = userBL.Login(userLoginModel);
                 if (result != null)
                 {
+                    //throw new Exception("Error Occured");
                     return Ok(new { success = true, message = "Login is  Succecsfull", data = result });
                 }
                 else
@@ -59,14 +67,14 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "Login is not Successfull" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
-        [HttpPost] // For Custom Route
-        [Route("ForgotPassword")]
+        [Authorize] // For Custom Route
+        [HttpPost("ForgotPassword")]
         public ActionResult FogotPassword(string Email)
         {
             try
@@ -82,16 +90,15 @@ namespace FundoNote.Controllers
                 }
 
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
 
         [Authorize]
-        [HttpPut]
-        [Route("ResetLink")]
+        [HttpPut("ResetLink")]
         public ActionResult ResetLink(string password, string confirmPassword)
         {
 
@@ -112,9 +119,9 @@ namespace FundoNote.Controllers
                 }
 
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
 

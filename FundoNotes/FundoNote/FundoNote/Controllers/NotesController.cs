@@ -3,10 +3,18 @@ using CommonLayer.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RepositoryLayer.Context;
 using RepositoryLayer.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FundoNote.Controllers
 {
@@ -15,11 +23,25 @@ namespace FundoNote.Controllers
     public class NotesController : ControllerBase
     {
         private readonly INotesBL notesBL; // Object
+
+        private readonly IMemoryCache memoryCache;
+        private readonly IDistributedCache distributedCache;
+
+        private readonly FundoContext fundoContext;
+
+        private readonly ILogger<NotesController> _logger;
+
+
         //private long userId;
 
-        public NotesController(INotesBL notesBL) // Constructor
+        public NotesController(INotesBL notesBL , IMemoryCache memoryCache, FundoContext fundoContext, IDistributedCache distributedCache, ILogger<NotesController> _logger) // Constructor
         {
             this.notesBL = notesBL;
+            this.memoryCache = memoryCache;
+            this.fundoContext = fundoContext;
+            this.distributedCache = distributedCache;
+            this._logger = _logger;
+
         }
         [Authorize]
         [HttpPost] // For Custom Route
@@ -39,9 +61,9 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "Notes creation failed" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -63,8 +85,9 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "NOTES RECIEVED FAILED" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -95,8 +118,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -126,8 +150,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -158,8 +183,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -188,8 +214,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -219,8 +246,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -242,8 +270,9 @@ namespace FundoNote.Controllers
                     return this.BadRequest(new { message = "Not uploaded" });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -265,12 +294,38 @@ namespace FundoNote.Controllers
                     return this.NotFound(new { success = false, message = "Unable to Change color" });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
 
+        }
+
+        [Authorize]
+        [HttpGet("redis")]
+        public async Task<IActionResult> GetAllNotesUsingRedisCache()
+        {
+            var cacheKey = "NotesList";
+            string serializedNotesList;
+            var NotesList = new List<NotesEntity>();
+            var redisNotesList = await distributedCache.GetAsync(cacheKey);
+            if (redisNotesList != null)
+            {
+                serializedNotesList = Encoding.UTF8.GetString(redisNotesList);
+                NotesList = JsonConvert.DeserializeObject<List<NotesEntity>>(serializedNotesList);
+            }
+            else
+            {
+                NotesList = await fundoContext.NotesTable.ToListAsync();
+                serializedNotesList = JsonConvert.SerializeObject(NotesList);
+                redisNotesList = Encoding.UTF8.GetBytes(serializedNotesList);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+                await distributedCache.SetAsync(cacheKey, redisNotesList, options);
+            }
+            return Ok(NotesList);
         }
 
 

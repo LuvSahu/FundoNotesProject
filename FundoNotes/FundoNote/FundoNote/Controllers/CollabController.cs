@@ -1,10 +1,18 @@
 ﻿using BusinessLayer.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RepositoryLayer.Context;
 using RepositoryLayer.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FundoNote.Controllers
 {
@@ -12,10 +20,24 @@ namespace FundoNote.Controllers
     [ApiController]
     public class CollabController : ControllerBase
     {
-        ICollabBL collabBL;
-        public CollabController(ICollabBL collabBL)
+        private readonly ICollabBL collabBL;
+
+        private readonly IMemoryCache memoryCache;
+        private readonly IDistributedCache distributedCache;
+
+        private readonly FundoContext fundoContext;
+
+        private readonly ILogger<CollabController> _logger;
+
+
+        public CollabController(ICollabBL collabBL, IMemoryCache memoryCache, FundoContext fundoContext, IDistributedCache distributedCache, ILogger<CollabController> _logger)
         {
             this.collabBL = collabBL;
+            this.memoryCache = memoryCache;
+            this.fundoContext = fundoContext;
+            this.distributedCache = distributedCache;
+            this._logger = _logger;
+
         }
         [Authorize]
         [HttpPost("CreateCollab")]
@@ -43,8 +65,9 @@ namespace FundoNote.Controllers
                     });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -65,8 +88,9 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "Collaborater Email not deleted" });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -89,10 +113,38 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "COLLABRATION RECIEVED FAILED" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
+
                 throw;
             }
+        }
+
+        [Authorize]
+        [HttpGet("redis")]
+        public async Task<IActionResult> GetAllCollabUsingRedisCache()
+        {
+            var cacheKey = "CollabList";
+            string serializedCollabList;
+            var CollabList = new List<CollabEntity>();
+            var redisCollabList = await distributedCache.GetAsync(cacheKey);
+            if (redisCollabList != null)
+            {
+                serializedCollabList = Encoding.UTF8.GetString(redisCollabList);
+                CollabList = JsonConvert.DeserializeObject<List<CollabEntity>>(serializedCollabList);
+            }
+            else
+            {
+                CollabList = await fundoContext.CollabTable.ToListAsync();
+                serializedCollabList = JsonConvert.SerializeObject(CollabList);
+                redisCollabList = Encoding.UTF8.GetBytes(serializedCollabList);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+                await distributedCache.SetAsync(cacheKey, redisCollabList, options);
+            }
+            return Ok(CollabList);
         }
     }
 }

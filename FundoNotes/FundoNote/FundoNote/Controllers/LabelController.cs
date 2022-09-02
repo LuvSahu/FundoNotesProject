@@ -2,8 +2,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RepositoryLayer.Context;
+using RepositoryLayer.Entity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FundoNote.Controllers
 {
@@ -12,9 +22,22 @@ namespace FundoNote.Controllers
     public class LabelController : ControllerBase
     {
        private readonly ILabelBL labelBL;
-        public LabelController(ILabelBL labelBL)
+
+       private readonly IMemoryCache memoryCache;
+       private readonly IDistributedCache distributedCache;
+
+       private readonly FundoContext fundoContext;
+
+       private readonly ILogger<LabelController> _logger;
+
+        public LabelController(ILabelBL labelBL, IMemoryCache memoryCache, FundoContext fundoContext, IDistributedCache distributedCache, ILogger<LabelController> _logger)
         {
             this.labelBL = labelBL;
+            this.memoryCache = memoryCache;
+            this.fundoContext = fundoContext;
+            this.distributedCache = distributedCache;
+            this._logger = _logger;
+
         }
 
         [Authorize]
@@ -44,9 +67,9 @@ namespace FundoNote.Controllers
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex.ToString());
                 throw;
             }
             
@@ -69,8 +92,9 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "LABEL RECIEVED FAILED" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -92,8 +116,9 @@ namespace FundoNote.Controllers
                     return BadRequest(new { success = false, message = "LABEL UPDATE FAILED" });
                 }
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex.ToString());
                 throw;
             }
         }
@@ -102,19 +127,54 @@ namespace FundoNote.Controllers
         [HttpDelete("Delete")]
         public ActionResult DeleteLabel(long labelId)
         {
-
-            long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
-            var result = labelBL.DeleteLabel(labelId);
-            if (result != null)
+            try
             {
-                return Ok(new { success = true, message = "Label deleted", data = result });
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "UserId").Value);
+                var result = labelBL.DeleteLabel(labelId);
+                if (result != null)
+                {
+                    return Ok(new { success = true, message = "Label deleted", data = result });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Label not deleted" });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
+            
+
+
+        }
+
+        [Authorize]
+        [HttpGet("redis")]
+        public async Task<IActionResult> GetAllLabelUsingRedisCache()
+        {
+            var cacheKey = "LabelList";
+            string serializedLabelList;
+            var LabelList = new List<LabelEntity>();
+            var redisLabelList = await distributedCache.GetAsync(cacheKey);
+            if (redisLabelList != null)
+            {
+                serializedLabelList = Encoding.UTF8.GetString(redisLabelList);
+                LabelList = JsonConvert.DeserializeObject<List<LabelEntity>>(serializedLabelList);
             }
             else
             {
-                return BadRequest(new { success = false, message = "Label not deleted" });
+                LabelList = await fundoContext.LabelTable.ToListAsync();
+                serializedLabelList = JsonConvert.SerializeObject(LabelList);
+                redisLabelList = Encoding.UTF8.GetBytes(serializedLabelList);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+                await distributedCache.SetAsync(cacheKey, redisLabelList, options);
             }
-
-
+            return Ok(LabelList);
         }
 
     }
