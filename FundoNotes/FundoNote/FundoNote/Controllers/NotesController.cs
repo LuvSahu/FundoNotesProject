@@ -22,7 +22,7 @@ namespace FundoNote.Controllers
     [ApiController]
     public class NotesController : ControllerBase
     {
-        private readonly INotesBL notesBL; // Object
+        private readonly INotesBL notesBL; 
 
         private readonly IMemoryCache memoryCache;
         private readonly IDistributedCache distributedCache;

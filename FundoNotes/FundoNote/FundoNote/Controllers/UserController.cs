@@ -18,7 +18,7 @@ namespace FundoNote.Controllers
         private readonly IUserBL userBL; // Object
 
         private readonly ILogger<UserController> _logger;
-
+        
         public UserController(IUserBL userBL, ILogger<UserController> _logger) // Constructor
         {
             this.userBL = userBL;
